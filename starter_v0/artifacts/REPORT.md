@@ -64,7 +64,7 @@ Chuỗi so sánh dùng OpenAI GPT-5.6 Luna và 20 case cố định trong base e
 | v2 | tools.yaml | Làm rõ khi dùng từng tool và quy ước tham số | 55% | 95% (19/20) | 100% | 100.0% | [JSON](../runs/v2_B_base_openai_20261110T113027839538.json) |
 | v3 | system_prompt.md | Ưu tiên xác nhận trước khi gửi và quyết định theo lượt hiện tại | 95% | 100% (20/20) | 100% | 100.0% | [JSON](../runs/v3_B_base_openai_20261110T113228956753.json) |
 
-v1 sửa hai case tự đoán thông tin nhưng làm model hỏi lại quá nhiều. v2 khắc phục lỗi tham số và dùng ngữ cảnh, còn lỗi xác nhận đăng bài. v3 sửa đúng lỗi còn lại. Hai baseline Groq trước đó vẫn nằm trong version log và không được dùng để tính mức cải thiện của Luna.
+v1 sửa hai case tự đoán thông tin nhưng làm model hỏi lại quá nhiều. v2 khắc phục lỗi tham số và dùng ngữ cảnh, còn lỗi xác nhận đăng bài. v3 sửa đúng lỗi còn lại.
 
 [CSV phân tích theo case, v0–v3](../analysis/luna_base_runs.csv).
 
@@ -81,29 +81,6 @@ có `compare_papers` và `research_brief`. Chạy lại cùng bộ base bằng L
 | R03, R13, M02, M06 | Gọi lookup đúng nhưng thêm từ chỉ thời gian hoặc mở rộng query. | v2 tách chủ đề khỏi topic và timeframe. | Đạt 4/4 |
 | R10, R11 | Gọi timeline hoặc fetch dù thiếu tài khoản hoặc URL. | v1 yêu cầu clarify khi thiếu đầu vào; v2 phân biệt với câu đã đủ thông tin. | Đạt 2/2 |
 | R12 | Gọi clarify với response_type=text khi cần xác nhận yes_no. | v3 ưu tiên xác nhận ý định đăng trước khi thu thập phần còn thiếu. | Đạt |
-
-### Baseline Groq Qwen trước đó
-
-**Kết quả v0:** 10/14 case được chấm đạt (71.4%), trên 20 case chạy. Routing 85.7%, arguments 71.4%, multi-turn 80.0%. Có 6 lỗi provider bị loại khỏi mẫu số điểm. [Run JSON](../runs/v0_B_base_groq_20261110T105633299378.json).
-
-Use actual failures from `results[*].result.failures`.
-
-| Case ID | Failure Type | Actual Tool Calls | What Failed | Fix |
-|---|---|---|---|---|
-| R01_user_tweets_routing | provider_error | — | APIConnectionError | Kiểm tra lỗi API/model |
-| R02_search_tweets_routing | provider_error | — | Groq từ chối lời gọi tool do định dạng hoặc tham số không hợp lệ. | Kiểm tra lỗi API/model |
-| R03_web_news_routing | wrong_tool / wrong_arg_value | lookup({"max_results":8,"query":"AI news today highlights","timeframe":"day","topic":"news"}) | query: expected 'AI', got 'AI news today highlights' | Chưa sửa ở v0 |
-| R08_out_of_scope | provider_error | — | APITimeoutError | Kiểm tra lỗi API/model |
-| R10_missing_handle | missing_info / missing_tool_call | timeline({"limit":5,"screenname":"sama"}) | missing tool call clarify; extra tool call timeline | Chưa sửa ở v0 |
-| R11_missing_url | missing_info / missing_tool_call | fetch({"url":"https://www.bloomberg.com/news/articles/2024-01-15/ai-advances-transform-industry"}) | missing tool call clarify; extra tool call fetch | Chưa sửa ở v0 |
-| R12_confirm_before_send | provider_error | — | APITimeoutError | Kiểm tra lỗi API/model |
-| R13_parallel_web_and_tweets | provider_error | — | Groq từ chối lời gọi tool do định dạng hoặc tham số không hợp lệ. | Kiểm tra lỗi API/model |
-| M02_carryover_timeframe | wrong_arg_value / wrong_arg_value | lookup({"max_results":5,"query":"robotics news today","timeframe":"day","topic":"news"}) | query: expected 'robotics', got 'robotics news today' | Chưa sửa ở v0 |
-| M03_correction_handle | provider_error | — | APITimeoutError | Kiểm tra lỗi API/model |
-
-[CSV đủ 20 case](../analysis/v0_base_cases.csv). Run ghi nhận 1 lỗi khi thực thi tool; điểm routing và arguments do runner tính từ tool call, độc lập với việc tool có lấy được dữ liệu hay không.
-
-**Thử lại lỗi mạng.** [Run bổ sung](../runs/v0-retry_B_base_groq_20261110T105817153621.json) chấm được cả 4 case, trong đó 3 case đạt. Case R12 gọi `send` và thiếu bước hỏi xác nhận `clarify`. Hai case khác trong run gốc vẫn bị Groq từ chối lời gọi tool. Gộp độ phủ của hai lần chạy có 13/18 case đạt trên số case chấm được. Bảng trên ghi điểm của run đầy đủ ban đầu.
 
 ## B3. Team Eval Cases
 
