@@ -1,0 +1,850 @@
+{
+  "run_id": "v3-integrated_B_group_openai_20261110T113759081708",
+  "version": "v3-integrated",
+  "artifact_version": "v3-integrated+pbe29de49b80b+tc02df77932c8",
+  "prompt_hash": "be29de49b80ba98dafae70fbcd2a73c43718f9710b3772e5192ca2717020aec3",
+  "tools_hash": "c02df77932c8076facc2ba13f872069300fe6161e494aa82e5c9bf20d68dada9",
+  "phase": "B",
+  "suite": "group",
+  "provider": "openai",
+  "model": "gpt-5.6-luna",
+  "system_prompt": "artifacts\\baselines\\v3\\system_prompt.md",
+  "tools": "artifacts\\baselines\\v3-integrated\\tools.yaml",
+  "eval_cases": "data\\eval_group.json",
+  "dataset_id": "day04_v2_research_group",
+  "dataset_role": "group",
+  "description": "Case do NHÓM tự viết thêm để cover thêm trường hợp. Mỗi case cần: id, phase='B', query HOẶC turns, failure_type (thuộc allowed_failure_types), và expect (tool_calls[...] hoặc no_tool=true). Nên kèm metadata.what_it_tests.",
+  "generated_at": "2026-11-10T11:37:59",
+  "summary": {
+    "total_cases": 10,
+    "measured_cases": 10,
+    "provider_error_cases": 0,
+    "passed_cases": 10,
+    "case_accuracy": 1.0,
+    "tool_routing_accuracy": 1.0,
+    "argument_accuracy": 1.0,
+    "multiturn_accuracy": 1.0,
+    "failure_counts": {},
+    "observed_mismatch_counts": {}
+  },
+  "results": [
+    {
+      "id": "G_PAPER_COMPARE_FROM_NOTES",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": false,
+      "metadata": {
+        "what_it_tests": "Use compare_papers with the selected criteria when notes and source links are already provided. No search or fetch calls."
+      },
+      "input": "Dùng đúng ghi chú đã cung cấp để tạo bảng so sánh hai bài sau. Chỉ đưa cột phương pháp và hạn chế, theo thứ tự đó. Bài A (https://example.org/paper-a): thử nghiệm mô phỏng, dữ liệu nhỏ. Bài B (https://example.org/paper-b): nghiên cứu thực địa, chưa rõ hạn chế. Không tra cứu thêm.",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "compare_papers",
+            "args": {
+              "criteria": [
+                "method",
+                "limitations"
+              ]
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "compare_papers",
+            "args": {
+              "items": [
+                {
+                  "title": "Bài A",
+                  "url": "https://example.org/paper-a",
+                  "method": "thử nghiệm mô phỏng",
+                  "limitations": "dữ liệu nhỏ"
+                },
+                {
+                  "title": "Bài B",
+                  "url": "https://example.org/paper-b",
+                  "method": "nghiên cứu thực địa",
+                  "limitations": "chưa rõ hạn chế"
+                }
+              ],
+              "criteria": [
+                "method",
+                "limitations"
+              ]
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_tool",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "compare_papers",
+          "args": {
+            "items": [
+              {
+                "title": "Bài A",
+                "url": "https://example.org/paper-a",
+                "method": "thử nghiệm mô phỏng",
+                "limitations": "dữ liệu nhỏ"
+              },
+              {
+                "title": "Bài B",
+                "url": "https://example.org/paper-b",
+                "method": "nghiên cứu thực địa",
+                "limitations": "chưa rõ hạn chế"
+              }
+            ],
+            "criteria": [
+              "method",
+              "limitations"
+            ]
+          },
+          "result": {
+            "tool": "compare_papers",
+            "paper_count": 2,
+            "criteria": [
+              "method",
+              "limitations"
+            ],
+            "markdown": "| Bài báo | Phương pháp | Hạn chế |\n| --- | --- | --- |\n| [Bài A](https://example.org/paper-a) | thử nghiệm mô phỏng | dữ liệu nhỏ |\n| [Bài B](https://example.org/paper-b) | nghiên cứu thực địa | chưa rõ hạn chế |"
+          }
+        }
+      ]
+    },
+    {
+      "id": "G_RESEARCH_BRIEF_FROM_SOURCES",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": true,
+      "metadata": {
+        "what_it_tests": "Use research_brief after research evidence is already available in context."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Chủ đề: Đánh giá AI agent. Nguồn AgentBench (https://arxiv.org/abs/2308.03688) đánh giá agent trong 8 môi trường. Nguồn GAIA (https://arxiv.org/abs/2311.12983) dùng câu hỏi thực tế để đo khả năng dùng công cụ."
+        },
+        {
+          "role": "user",
+          "content": "Từ hai nguồn vừa đưa, viết bản tóm tắt cho chủ đề Đánh giá AI agent, gồm kết luận, ý chính và danh sách nguồn. Chỉ dùng ghi chú đã có."
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "research_brief",
+            "args": {}
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "research_brief",
+            "args": {
+              "topic": "Đánh giá AI agent",
+              "sources": [
+                {
+                  "title": "AgentBench",
+                  "url": "https://arxiv.org/abs/2308.03688",
+                  "snippet": "Đánh giá agent trong 8 môi trường."
+                },
+                {
+                  "title": "GAIA",
+                  "url": "https://arxiv.org/abs/2311.12983",
+                  "snippet": "Dùng câu hỏi thực tế để đo khả năng dùng công cụ."
+                }
+              ]
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_tool",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "research_brief",
+          "args": {
+            "topic": "Đánh giá AI agent",
+            "sources": [
+              {
+                "title": "AgentBench",
+                "url": "https://arxiv.org/abs/2308.03688",
+                "snippet": "Đánh giá agent trong 8 môi trường."
+              },
+              {
+                "title": "GAIA",
+                "url": "https://arxiv.org/abs/2311.12983",
+                "snippet": "Dùng câu hỏi thực tế để đo khả năng dùng công cụ."
+              }
+            ]
+          },
+          "result": {
+            "tool": "research_brief",
+            "topic": "Đánh giá AI agent",
+            "conclusion": "Đánh giá agent trong 8 môi trường. [1] Dùng câu hỏi thực tế để đo khả năng dùng công cụ. [2]",
+            "bullets": [
+              "Đánh giá agent trong 8 môi trường. [1]",
+              "Dùng câu hỏi thực tế để đo khả năng dùng công cụ. [2]"
+            ],
+            "sources": [
+              {
+                "title": "AgentBench",
+                "url": "https://arxiv.org/abs/2308.03688"
+              },
+              {
+                "title": "GAIA",
+                "url": "https://arxiv.org/abs/2311.12983"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "G_SEARCH_BEFORE_RESEARCH_BRIEF",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": false,
+      "metadata": {
+        "what_it_tests": "Start with papers when there is no source evidence. The eval scores the first model round."
+      },
+      "input": "Bắt đầu bằng việc tìm đúng 2 bài trên arXiv về tool use của AI agent. Sau khi có kết quả mới viết bản tổng hợp kèm nguồn.",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "papers",
+            "args": {
+              "max_results": 2
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "papers",
+            "args": {
+              "query": "AI agent tool use",
+              "max_results": 2,
+              "sort_by": "relevance"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_tool",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "papers",
+          "args": {
+            "query": "AI agent tool use",
+            "max_results": 2,
+            "sort_by": "relevance"
+          },
+          "result": {
+            "tool": "arxiv_search",
+            "query": "AI agent tool use",
+            "api_query": "all:AI AND all:agent AND all:tool AND all:use",
+            "total_results": 1848,
+            "items": [
+              {
+                "arxiv_id": "2503.12687v1",
+                "title": "AI Agents: Evolution, Architecture, and Real-World Applications",
+                "summary": "This paper examines the evolution, architecture, and practical applications of AI agents from their early, rule-based incarnations to modern sophisticated systems that integrate large language models with dedicated modules for perception, planning, and tool use. Emphasizing both theoretical foundations and real-world deployments, the paper reviews key agent paradigms, discusses limitations of current evaluation benchmarks, and proposes a holistic evaluation framework that balances task effectiveness, efficiency, robustness, and safety. Applications across enterprise, personal assistance, and specialized domains are analyzed, with insights into future research directions for more resilient and adaptive AI agent systems.",
+                "authors": [
+                  "Naveen Krishnan"
+                ],
+                "published": "2025-03-16T23:07:48Z",
+                "updated": "2025-03-16T23:07:48Z",
+                "url": "http://arxiv.org/abs/2503.12687v1",
+                "pdf_url": "https://arxiv.org/pdf/2503.12687v1",
+                "source": "arxiv.org",
+                "primary_category": "cs.AI",
+                "categories": [
+                  "cs.AI"
+                ]
+              },
+              {
+                "arxiv_id": "2605.23989v1",
+                "title": "Towards trustworthy agentic AI: a comprehensive survey of safety, robustness, privacy, and system security",
+                "summary": "Agentic AI systems -- Large Language Models (LLMs) augmented with planning, tool use, memory, and long-horizon interactions -- can execute complex tasks autonomously, but their multi-step trajectories introduce new failure modes that challenge trustworthiness. This survey provides a focused examination of trustworthy agentic AI through two core dimensions that are critical for high-risk deployments: Safety and Robustness, and Privacy and System Security. For each dimension, we clarify key concepts, identify where risks emerge along the agent workflow, and summarize stage-targeted mitigation strategies. Other trustworthiness aspects (value alignment, transparency, fairness, and accountability) are discussed as relevant context rather than parallel chapters. To support consistent comparison and deployment decisions, we consolidate evaluation into a unified metrics-and-benchmarks hub, emphasizing both outcome and process signals (e.g., constraint violations, trace completeness, and adversarial success rates) and offering scenario-to-metric guidance for release gating. We conclude by outlining open challenges such as self-evolving agents, runtime monitoring and verification, privacy-preserving personalization, and the trust-utility trade-off, and present a case study of real-world security failures in open-source agentic systems. Our goal is to serve as a practical reference for researchers and practitioners building trustworthy agentic systems in high-stakes environments.",
+                "authors": [
+                  "Jinhu Qi",
+                  "Muzhi Li",
+                  "Jiahong Liu",
+                  "Yuqin Shu",
+                  "Dianzhi Yu",
+                  "Shicheng Ma",
+                  "Wenqian Cui",
+                  "Yiyang Zhao",
+                  "Yiyi Chen",
+                  "Ruoxi Jiang",
+                  "Irwin King",
+                  "Zenglin Xu"
+                ],
+                "published": "2026-05-17T10:26:37Z",
+                "updated": "2026-05-17T10:26:37Z",
+                "url": "http://arxiv.org/abs/2605.23989v1",
+                "pdf_url": "https://arxiv.org/pdf/2605.23989v1",
+                "source": "arxiv.org",
+                "primary_category": "cs.AI",
+                "categories": [
+                  "cs.AI",
+                  "cs.CL",
+                  "cs.CR"
+                ]
+              }
+            ],
+            "rate_limit_note": "arXiv may return 429 if called too frequently; this tool waits at least 3 seconds between requests in-process."
+          }
+        }
+      ]
+    },
+    {
+      "id": "G_WEB_NEWS_TIME_WINDOW",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": false,
+      "metadata": {
+        "what_it_tests": "Map the news intent, week and result limit into separate lookup arguments for a non-AI topic."
+      },
+      "input": "Tìm tin tức trên web về giao thông công cộng trong tuần này. Lấy tối đa 3 kết quả.",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "topic": "news",
+              "timeframe": "week",
+              "max_results": 3
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "query": "giao thông công cộng",
+              "topic": "news",
+              "timeframe": "week",
+              "max_results": 3
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_arg_value",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "lookup",
+          "args": {
+            "query": "giao thông công cộng",
+            "topic": "news",
+            "timeframe": "week",
+            "max_results": 3
+          },
+          "result": {
+            "tool": "web_search",
+            "query": "giao thông công cộng",
+            "topic": "news",
+            "timeframe": "week",
+            "items": [
+              {
+                "title": "Tranh cãi về tham vọng đưa giao thông công cộng lên không gian tầm thấp",
+                "url": "https://vovgiaothong.vn/newsaudio/tranh-cai-ve-tham-vong-dua-giao-thong-cong-cong-len-khong-gian-tam-thap-d56512.html",
+                "source": "vovgiaothong.vn",
+                "summary": "Thống đốc Jakarta (Indonesia) đề xuất mở rộng tập đoàn xe buýt TransJakarta sang vận tải đường thủy và tiến tới phát triển dịch vụ bay như trực thăng.",
+                "score": 0.4766533
+              },
+              {
+                "title": "TP. HỒ CHÍ MINH TĂNG CƯỜNG KHUYẾN KHÍCH SỬ DỤNG GIAO THÔNG CÔNG CỘNG",
+                "url": "https://hdnd.hochiminhcity.gov.vn/videos/c/tp-ho-chi-minh-tang-cuong-khuyen-khich-su-dung-giao-thong-cong-cong-iw92o5u-6tc",
+                "source": "hdnd.hochiminhcity.gov.vn",
+                "summary": "HTV Tin tức, kênh Tin tức chính thức của Đài Phát thanh và Truyền hình TP. Hồ Chí Minh (HTV). ------------------------------------------------ #HTVTintức là",
+                "score": 0.36622754
+              },
+              {
+                "title": "TPHCM tập trung nguồn lực gỡ điểm nghẽn giao thông và ngập nước",
+                "url": "https://www.hcmcpv.org.vn/tin-tuc/tphcm-tap-trung-nguon-luc-go-diem-nghen-giao-thong-va-ngap-nuoc-1491945482",
+                "source": "hcmcpv.org.vn",
+                "summary": "Sáng 11/10, Thường trực HĐND TPHCM phối hợp Đài Phát thanh và Truyền hình TPHCM tổ chức chương trình Dân hỏi - Chính quyền trả lời tháng 10/2026,",
+                "score": 0.07031038
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "G_MISSING_ARTICLE_URL",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": false,
+      "metadata": {
+        "what_it_tests": "Ask for the missing source URL when the user means one particular article."
+      },
+      "input": "Tóm tắt bài viết về giao thông công cộng mà mình đang đọc nhé.",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "response_type": "text"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "question": "Bạn gửi đường link bài viết (hoặc dán nội dung) để mình tóm tắt nhé?",
+              "response_type": "text"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "missing_info",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "clarify",
+          "args": {
+            "question": "Bạn gửi đường link bài viết (hoặc dán nội dung) để mình tóm tắt nhé?",
+            "response_type": "text"
+          },
+          "result": {
+            "tool": "ask_user",
+            "question": "Bạn gửi đường link bài viết (hoặc dán nội dung) để mình tóm tắt nhé?",
+            "response_type": "text",
+            "options": [],
+            "awaiting_user": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "G_READ_ARXIV_PAGE_LIMIT",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": false,
+      "metadata": {
+        "what_it_tests": "Read a known arXiv ID with the requested page limit rather than searching again."
+      },
+      "input": "Đọc đúng một trang đầu của PDF arXiv mã 2308.03688. Mình đã có mã bài, không cần tìm paper khác.",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "paper_text",
+            "args": {
+              "arxiv_url": "2308.03688",
+              "max_pages": 1
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "paper_text",
+            "args": {
+              "arxiv_url": "2308.03688",
+              "max_pages": 1
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_arg_value",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "paper_text",
+          "args": {
+            "arxiv_url": "2308.03688",
+            "max_pages": 1
+          },
+          "result": {
+            "tool": "get_arxiv_paper_text",
+            "arxiv_id": "2308.03688",
+            "url": "https://arxiv.org/abs/2308.03688",
+            "pdf_url": "https://arxiv.org/pdf/2308.03688.pdf",
+            "pdf_path": "D:\\Tuyen\\vinuni\\lab\\K5-L3A-DAY03-NhomVibe-Prompt-Function-Calling-Tool-Design-MCP\\starter_v0\\arxiv_papers\\2308.03688.pdf",
+            "txt_path": "D:\\Tuyen\\vinuni\\lab\\K5-L3A-DAY03-NhomVibe-Prompt-Function-Calling-Tool-Design-MCP\\starter_v0\\arxiv_papers\\2308.03688.txt",
+            "page_count": 58,
+            "pages_read": 1,
+            "chars_returned": 3458,
+            "items": [
+              {
+                "title": "arXiv paper 2308.03688",
+                "url": "https://arxiv.org/abs/2308.03688",
+                "source": "arxiv.org",
+                "summary": "Published as a conference paper at ICLR 2024\nAGENTBENCH: EVALUATINGLLMS ASAGENTS\nXiao Liu1,*, Hao Yu1,*,†, Hanchen Zhang1,*, Yifan Xu1, Xuanyu Lei1, Hanyu Lai1, Yu Gu2,†,\nHangliang Ding1, Kaiwen Men1, Kejuan Yang1, Shudan Zhang1, Xiang Deng2, Aohan Zeng1,\nZhengxiao Du1, Chenhui Zhang1, Sheng Shen3, Tianjun Zhang3, Yu Su2, Huan Sun2,\nMinlie Huang1, Yuxiao Dong1,‡, Jie Tang1,‡\n1Tsinghua University, 2The Ohio State University, 3UC Berkeley\nABSTRACT\nThe potential of Large Language Model (LLM) as agents has been widely acknowl-\nedged recently. Thus, there is an urgent need to quantitativelyevaluate LLMs as\nagentson challenging tasks in interactive environments. We present AGENTBENCH,\na multi-dimensional benchmark that consists of 8 distinct environments to assess\nLLM-as-Agent’s reasoning and decision-making abilities. Our extensive test over\n29 API-based and open-sourced (OSS) LLMs shows that, while top commercial\nLLMs present a strong ability of acting as agents in complex environments, there\nis a significant disparity in performance between them and many OSS competitors\nthat are no larger than 70B. We identify the typical reasons of failures in environ-\nments and LLMs, showing that poor long-term reasoning, decision-making, and\ninstruction following abilities are the main obstacles for developing usable LLM\nagents. Improving instruction following and training on high quality multi-round\nalignment data could improve agent performance. And different from existing\nassumptions, training on code present ambivalent impacts on different agent tasks.\nDatasets, environments, and an integrated evaluation package for AGENTBENCH\nare released athttps://github.com/THUDM/AgentBench.\nOperating System\nDatabase\nKnowledge\nGraph\nDigital\nCard Game\nLateral Thinking Puzzle\nHouse-holding\nWeb\nShopping\nWeb\nBrowsing\ngpt-4 (0613)\nclaude-3 (opus)\nglm-4\ncodellama-34b-instruct\nvicuna-13b-v1.5\nllama-2-70b\n(a) Typical LLMs’ AgentBench performance (rela-\ntive) against the best in each environment.\n0 1 2 3 4\nAgentBench Overall Score\ngpt-4\nclaude-3\nglm-4\nclaude-2\nclaude\ngpt-3.5-turbo\ntext-davinci-003\nclaude-instant\nchat-bison-001\ntext-davinci-002\ncodellama-34b\nvicuna-13b\nllama-2-70b\nllama-2-13b\n......\ndolly-12b\nchatglm-6b\noasst-12b\nAPI-based\nCommercial\nLLMs\nOSS LLMs\n4.01\n3.11\n2.89\n2.49\n2.44\n2.32\n1.71\n1.60\n1.39\n1.25\n0.96\n0.93\n0.78\n0.77\n0.14\n0.11\n0.03\nAvg:2.32Avg:0.51\n(b) Overall scores of AgentBench across 8 environ-\nments. Dashed lines for two LLM types’ average.\nFigure 1: An overview of LLMs on AGENTBENCH. While LLMs begin to manifest their proficiency\nin LLM-as-Agent, gaps between models and the distance toward practical usability are significant.\n1 INTRODUCTION\nIntelligent agents and autonomous entities (Searle, 1970; Maes, 1994; Wooldridge & Jennings, 1995)\nthat are capable of decision-making and action execution in particular environments have been key\nconcepts of artificial intelligence (AI) historically. Notwithstanding substantial advancements in deep\nlearning algorithms applied in both computer vision and natural language processing (NLP), their\npotential for developing efficient and practically usable assisting agents remains largely unexplored.\n*XL and HY and HZ are lead authors that contributed equally. Email: {shawliu9,longinyh,\nzhanghanchen77}@gmail.com\n‡Corresponding authors: YD and JT. Email:{yuxiaod,jietang}@tsinghua.edu.cn\n†Work done when HY , YG visited Tsinghua University.\n1\narXiv:2308.03688v3  [cs.AI]  4 Oct 2025"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "G_COMPARE_REVISED_CRITERIA",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": true,
+      "metadata": {
+        "what_it_tests": "Carry forward the two papers and use the newest comparison criteria."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Dùng ghi chú mẫu sau để so sánh hai bài về xe buýt: Bài A (https://example.org/bus-a) dùng khảo sát, kết quả thời gian chờ giảm; Bài B (https://example.org/bus-b) dùng mô phỏng, kết quả tần suất tăng. Mình muốn so sánh kết quả và hạn chế."
+        },
+        {
+          "role": "user",
+          "content": "Đổi lại chỉ lấy cột phương pháp và kết quả. Dùng các ghi chú và link có sẵn."
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "compare_papers",
+            "args": {
+              "criteria": [
+                "method",
+                "findings"
+              ]
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "compare_papers",
+            "args": {
+              "items": [
+                {
+                  "title": "Bài A",
+                  "url": "https://example.org/bus-a",
+                  "method": "Khảo sát.",
+                  "findings": "Thời gian chờ giảm."
+                },
+                {
+                  "title": "Bài B",
+                  "url": "https://example.org/bus-b",
+                  "method": "Mô phỏng.",
+                  "findings": "Tần suất tăng."
+                }
+              ],
+              "criteria": [
+                "method",
+                "findings"
+              ]
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_arg_value",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "compare_papers",
+          "args": {
+            "items": [
+              {
+                "title": "Bài A",
+                "url": "https://example.org/bus-a",
+                "method": "Khảo sát.",
+                "findings": "Thời gian chờ giảm."
+              },
+              {
+                "title": "Bài B",
+                "url": "https://example.org/bus-b",
+                "method": "Mô phỏng.",
+                "findings": "Tần suất tăng."
+              }
+            ],
+            "criteria": [
+              "method",
+              "findings"
+            ]
+          },
+          "result": {
+            "tool": "compare_papers",
+            "paper_count": 2,
+            "criteria": [
+              "method",
+              "findings"
+            ],
+            "markdown": "| Bài báo | Phương pháp | Kết quả chính |\n| --- | --- | --- |\n| [Bài A](https://example.org/bus-a) | Khảo sát. | Thời gian chờ giảm. |\n| [Bài B](https://example.org/bus-b) | Mô phỏng. | Tần suất tăng. |"
+          }
+        }
+      ]
+    },
+    {
+      "id": "G_FETCH_AFTER_CLARIFICATION",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": true,
+      "metadata": {
+        "what_it_tests": "Use the exact URL provided after clarification rather than searching or asking again."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Tóm tắt trang tài liệu Python này giúp mình."
+        },
+        {
+          "role": "assistant",
+          "content": "Bạn gửi URL của trang tài liệu nhé."
+        },
+        {
+          "role": "user",
+          "content": "Đây nhé: https://docs.python.org/3/library/pathlib.html. Đọc đúng trang này."
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "fetch",
+            "args": {
+              "url": "https://docs.python.org/3/library/pathlib.html"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "fetch",
+            "args": {
+              "url": "https://docs.python.org/3/library/pathlib.html"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "missing_info",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "fetch",
+          "args": {
+            "url": "https://docs.python.org/3/library/pathlib.html"
+          },
+          "result": {
+            "tool": "read_url",
+            "url": "https://docs.python.org/3/library/pathlib.html",
+            "items": [
+              {
+                "title": "pathlib — Object-oriented filesystem paths — Python 3.15.2 documentation",
+                "url": "https://docs.python.org/3/library/pathlib.html",
+                "source": "docs.python.org",
+                "summary": "### Navigation\n\n- [index](https://docs.python.org/3/genindex.html \"General Index\")\n- [modules](https://docs.python.org/3/py-modindex.html \"Python Module Index\") \\|\n- [next](https://docs.python.org/3/library/os.path.html \"os.path — Common pathname manipulations\") \\|\n- [previous](https://docs.python.org/3/library/filesys.html \"File and Directory Access\") \\|\n- ![Python logo](https://docs.python.org/3/_static/py.svg)\n- [Python](https://www.python.org/) »\n- German \\| DeutschGreek \\| ΕλληνικάEnglishSpanish \\| españolPersian \\| فارسیFrench \\| françaisItalian \\| italianoJapanese \\| 日本語Korean \\| 한국어Punjabi \\| ਪੰਜਾਬੀPolish \\| polskiBrazilian Portuguese \\| Português brasileiroRomanian \\| RomâneșteRussian \\| РусскийTurkish \\| TürkçeSimplified Chinese \\| 简体中文Traditional Chinese \\| 繁體中文\n\ndev (3.16)3.15.23.143.133.123.113.103.93.83.73.63.53.43.33.23.13.02.72.6\n\n- [3.15.2 documentation](https://docs.python.org/3/index.html) »\n\n- [The Python standard library](https://docs.python.org/3/library/index.html) »\n- [File and Directory Access](https://docs.python.org/3/library/filesys.html) »\n- [`pathlib` — Object-oriented filesystem paths](https://docs.python.org/3/library/pathlib.html)\n- \\|\n\n- Theme\nAutoLightDark \\|\n\n# `pathlib` — Object-oriented filesystem paths [¶](https://docs.python.org/3/library/pathlib.html\\#module-pathlib \"Link to this heading\")\n\nAdded in version 3.4.\n\n**Source code:** [Lib/pathlib/](https://github.com/python/cpython/tree/3.15/Lib/pathlib/)\n\n* * *\n\nThis module offers classes representing filesystem paths with semantics\nappropriate for different operating systems. Path classes are divided\nbetween [pure paths](https://docs.python.org/3/library/pathlib.html#pure-paths), which provide purely computational\noperations without I/O, and [concrete paths](https://docs.python.org/3/library/pathlib.html#concrete-paths), which\ninherit from pure paths but also provide I/O operations.\n\n![Inheritance diagram showing the classes available in pathlib. The most basic class is PurePath, which has three direct subclasses: PurePosixPath, PureWindowsPath, and Path. Further to these four classes, there are two classes that use multiple inheritance: PosixPath subclasses PurePosixPath and Path, and WindowsPath subclasses PureWindowsPath and Path.](https://docs.python.org/3/_images/pathlib-inheritance.png)\n\nIf you’ve never used this module before or just aren’t sure which class is\nright for your task, [`Path`](https://docs.python.org/3/library/pathlib.html#pathlib.Path \"pathlib.Path\") is most likely what you need. It instantiates\na [concrete path](https://docs.python.org/3/library/pathlib.html#concrete-paths) for the platform the code is running on.\n\nPure paths are useful in some special cases; for example:\n\n1. If you want to manipulate Windows paths on a Unix machine (or vice versa).\nYou cannot instantiate a [`WindowsPath`](https://docs.python.org/3/library/pathlib.html#pathlib.WindowsPath \"pathlib.WindowsPath\") when running on Unix, but you\ncan instantiate [`PureWindowsPath`](https://docs.python.org/3/library/pathlib.html#pathlib.PureWindowsPath \"pathlib.PureWindowsPath\").\n\n2. You want to make sure that your code only manipulates paths without actually\naccessing the OS. In this case, instantiating one of the pure classes may be\nuseful since those simply don’t have any OS-accessing operations.\n\n\nSee also\n\n[**PEP 428**](https://peps.python.org/pep-0428/): The pathlib module – object-oriented filesystem paths.\n\nSee also\n\nFor low-level path manipulation on strings, you can also use the\n[`os.path`](https://docs.python.org/3/library/os.path.html#module-os.path \"os.path: Operations on pathnames.\") module.\n\n## Basic use [¶](https://docs.python.org/3/library/pathlib.html\\#basic-use \"Link to this heading\")\n\nImporting the main class:\n\nCopy\n\n```\n>>> from pathlib import Path\n```\n\nListing subdirectories:\n\nCopy\n\n```\n>>> p = Path('.')\n>>> [x for x in p.iterdir() if x.is_dir()]\n[PosixPath('.hg'), PosixPath('docs'), PosixPath('dist'),\\\n PosixPath('__pycache__'), Posix"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "G_BRIEF_TOPIC_FROM_HISTORY",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": true,
+      "metadata": {
+        "what_it_tests": "Reuse earlier source notes and preserve the specified topic for a non-AI research brief."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Tên chủ đề: Không gian xanh đô thị. Ghi chú mẫu A (https://example.org/green-a): nghiên cứu khảo sát khả năng tiếp cận công viên. Ghi chú mẫu B (https://example.org/green-b): nghiên cứu đo nhiệt độ bề mặt quanh hàng cây."
+        },
+        {
+          "role": "user",
+          "content": "Tổng hợp hai nguồn trên thành kết luận ngắn, ý chính và link nguồn. Giữ đúng tên chủ đề đã nêu, không tra cứu thêm."
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "research_brief",
+            "args": {
+              "topic": "Không gian xanh đô thị"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "research_brief",
+            "args": {
+              "topic": "Không gian xanh đô thị",
+              "sources": [
+                {
+                  "title": "Ghi chú mẫu A",
+                  "url": "https://example.org/green-a",
+                  "snippet": "Nghiên cứu khảo sát khả năng tiếp cận công viên."
+                },
+                {
+                  "title": "Ghi chú mẫu B",
+                  "url": "https://example.org/green-b",
+                  "snippet": "Nghiên cứu đo nhiệt độ bề mặt quanh hàng cây."
+                }
+              ]
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_arg_value",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "research_brief",
+          "args": {
+            "topic": "Không gian xanh đô thị",
+            "sources": [
+              {
+                "title": "Ghi chú mẫu A",
+                "url": "https://example.org/green-a",
+                "snippet": "Nghiên cứu khảo sát khả năng tiếp cận công viên."
+              },
+              {
+                "title": "Ghi chú mẫu B",
+                "url": "https://example.org/green-b",
+                "snippet": "Nghiên cứu đo nhiệt độ bề mặt quanh hàng cây."
+              }
+            ]
+          },
+          "result": {
+            "tool": "research_brief",
+            "topic": "Không gian xanh đô thị",
+            "conclusion": "Nghiên cứu khảo sát khả năng tiếp cận công viên. [1] Nghiên cứu đo nhiệt độ bề mặt quanh hàng cây. [2]",
+            "bullets": [
+              "Nghiên cứu khảo sát khả năng tiếp cận công viên. [1]",
+              "Nghiên cứu đo nhiệt độ bề mặt quanh hàng cây. [2]"
+            ],
+            "sources": [
+              {
+                "title": "Ghi chú mẫu A",
+                "url": "https://example.org/green-a"
+              },
+              {
+                "title": "Ghi chú mẫu B",
+                "url": "https://example.org/green-b"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "G_CANCEL_PUBLISHING",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": true,
+      "metadata": {
+        "what_it_tests": "An explicit cancellation supersedes the earlier publishing request and must not invoke any tool."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Đăng bản tin nghiên cứu lên Telegram giúp mình."
+        },
+        {
+          "role": "assistant",
+          "content": "Bạn xác nhận muốn đăng bản tin lên Telegram chứ?"
+        },
+        {
+          "role": "user",
+          "content": "Không, hủy yêu cầu đăng. Chỉ trả lời mình rằng đã hủy."
+        }
+      ],
+      "expect": {
+        "no_tool": true
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [],
+        "actual_text": "Đã hủy yêu cầu đăng.",
+        "case_failure_type": "wrong_boundary",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": []
+    }
+  ]
+}

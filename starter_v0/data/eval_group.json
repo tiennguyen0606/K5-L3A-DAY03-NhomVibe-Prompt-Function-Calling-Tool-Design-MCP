@@ -36,6 +36,76 @@
       "failure_type": "wrong_tool",
       "expect": {"tool_calls": [{"name": "papers", "args": {"max_results": 2}}]},
       "metadata": {"what_it_tests": "Start with papers when there is no source evidence. The eval scores the first model round."}
+    },
+    {
+      "id": "G_WEB_NEWS_TIME_WINDOW",
+      "phase": "B",
+      "query": "Tìm tin tức trên web về giao thông công cộng trong tuần này. Lấy tối đa 3 kết quả.",
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "lookup", "args": {"topic": "news", "timeframe": "week", "max_results": 3}}]},
+      "metadata": {"what_it_tests": "Map the news intent, week and result limit into separate lookup arguments for a non-AI topic."}
+    },
+    {
+      "id": "G_MISSING_ARTICLE_URL",
+      "phase": "B",
+      "query": "Tóm tắt bài viết về giao thông công cộng mà mình đang đọc nhé.",
+      "failure_type": "missing_info",
+      "expect": {"tool_calls": [{"name": "clarify", "args": {"response_type": "text"}}]},
+      "metadata": {"what_it_tests": "Ask for the missing source URL when the user means one particular article."}
+    },
+    {
+      "id": "G_READ_ARXIV_PAGE_LIMIT",
+      "phase": "B",
+      "query": "Đọc đúng một trang đầu của PDF arXiv mã 2308.03688. Mình đã có mã bài, không cần tìm paper khác.",
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "paper_text", "args": {"arxiv_url": "2308.03688", "max_pages": 1}}]},
+      "metadata": {"what_it_tests": "Read a known arXiv ID with the requested page limit rather than searching again."}
+    },
+    {
+      "id": "G_COMPARE_REVISED_CRITERIA",
+      "phase": "B",
+      "turns": [
+        {"role": "user", "content": "Dùng ghi chú mẫu sau để so sánh hai bài về xe buýt: Bài A (https://example.org/bus-a) dùng khảo sát, kết quả thời gian chờ giảm; Bài B (https://example.org/bus-b) dùng mô phỏng, kết quả tần suất tăng. Mình muốn so sánh kết quả và hạn chế."},
+        {"role": "user", "content": "Đổi lại chỉ lấy cột phương pháp và kết quả. Dùng các ghi chú và link có sẵn."}
+      ],
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "compare_papers", "args": {"criteria": ["method", "findings"]}}]},
+      "metadata": {"what_it_tests": "Carry forward the two papers and use the newest comparison criteria."}
+    },
+    {
+      "id": "G_FETCH_AFTER_CLARIFICATION",
+      "phase": "B",
+      "turns": [
+        {"role": "user", "content": "Tóm tắt trang tài liệu Python này giúp mình."},
+        {"role": "assistant", "content": "Bạn gửi URL của trang tài liệu nhé."},
+        {"role": "user", "content": "Đây nhé: https://docs.python.org/3/library/pathlib.html. Đọc đúng trang này."}
+      ],
+      "failure_type": "missing_info",
+      "expect": {"tool_calls": [{"name": "fetch", "args": {"url": "https://docs.python.org/3/library/pathlib.html"}}]},
+      "metadata": {"what_it_tests": "Use the exact URL provided after clarification rather than searching or asking again."}
+    },
+    {
+      "id": "G_BRIEF_TOPIC_FROM_HISTORY",
+      "phase": "B",
+      "turns": [
+        {"role": "user", "content": "Tên chủ đề: Không gian xanh đô thị. Ghi chú mẫu A (https://example.org/green-a): nghiên cứu khảo sát khả năng tiếp cận công viên. Ghi chú mẫu B (https://example.org/green-b): nghiên cứu đo nhiệt độ bề mặt quanh hàng cây."},
+        {"role": "user", "content": "Tổng hợp hai nguồn trên thành kết luận ngắn, ý chính và link nguồn. Giữ đúng tên chủ đề đã nêu, không tra cứu thêm."}
+      ],
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "research_brief", "args": {"topic": "Không gian xanh đô thị"}}]},
+      "metadata": {"what_it_tests": "Reuse earlier source notes and preserve the specified topic for a non-AI research brief."}
+    },
+    {
+      "id": "G_CANCEL_PUBLISHING",
+      "phase": "B",
+      "turns": [
+        {"role": "user", "content": "Đăng bản tin nghiên cứu lên Telegram giúp mình."},
+        {"role": "assistant", "content": "Bạn xác nhận muốn đăng bản tin lên Telegram chứ?"},
+        {"role": "user", "content": "Không, hủy yêu cầu đăng. Chỉ trả lời mình rằng đã hủy."}
+      ],
+      "failure_type": "wrong_boundary",
+      "expect": {"no_tool": true},
+      "metadata": {"what_it_tests": "An explicit cancellation supersedes the earlier publishing request and must not invoke any tool."}
     }
   ]
 }

@@ -337,6 +337,10 @@ declaration của vòng đánh giá tương ứng.
 
 Để team cùng zone tự thử agent trong Team showdown, expose UI đang chạy local ra một link public. Cách nhanh nhất, không cần đăng ký domain hay deploy lên cloud, là **Cloudflare Tunnel** (`cloudflared`).
 
+Với bản chia sẻ dùng API key của nhóm, đặt biến môi trường
+`PAPERTRAIL_DEMO_CODE` cho tiến trình Streamlit rồi gửi mã demo riêng cho
+người thử. Giao diện sẽ yêu cầu mã trước khi cho gọi agent.
+
 1. Chạy UI local trước (ví dụ Streamlit mặc định cổng `8501`):
 
    ```bash

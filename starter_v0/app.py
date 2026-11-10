@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from hmac import compare_digest
 from pathlib import Path
 from time import perf_counter
 from typing import Any
@@ -200,6 +201,18 @@ def run_turn(
 def main() -> None:
     st.set_page_config(page_title="Papertrail · Research Assistant", page_icon="📑", layout="wide")
     st.html(ROOT / "paper_ui.css")
+    demo_code = os.getenv("PAPERTRAIL_DEMO_CODE")
+    if demo_code and not st.session_state.get("demo_authenticated"):
+        st.title("Papertrail")
+        with st.form("demo_access", clear_on_submit=True):
+            entered = st.text_input("Mã demo", type="password")
+            submitted = st.form_submit_button("Mở Papertrail")
+        if submitted:
+            if compare_digest(entered.encode("utf-8"), demo_code.encode("utf-8")):
+                st.session_state.demo_authenticated = True
+                st.rerun()
+            st.error("Mã demo chưa đúng.")
+        st.stop()
     if "turns" not in st.session_state:
         st.session_state.turns = []
         st.session_state.session_id = uuid4().hex
