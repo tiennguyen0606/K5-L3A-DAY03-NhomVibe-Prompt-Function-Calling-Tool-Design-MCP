@@ -312,7 +312,8 @@ Try at least 3 live turns, for example:
 
 ## Chạy giao diện Papertrail
 
-Đặt `GROQ_API_KEY` trong `starter_v0/.env`, rồi chạy từ `starter_v0/`:
+Đặt `OPENAI_API_KEY` trong `starter_v0/.env` bằng khóa có quyền dùng
+`gpt-5.6-luna`, rồi chạy từ `starter_v0/`:
 
 ```bash
 python -m streamlit run app.py
@@ -325,8 +326,10 @@ Bạn có thể hỏi tiếp về những nguồn vừa tìm. Bảng **Luồng a
 khi model và tool đang chạy. Sau mỗi lượt, mở một bước để xem tham số,
 kết quả và thời gian hoặc tải transcript JSON.
 
-Giao diện dùng Groq với Qwen 3.8 27B làm mặc định và prompt demo riêng
-`artifacts/system_prompt_paper_ui.md`. Có thể đổi sang GPT-OSS trong **Model Groq**.
+Giao diện dùng GPT-5.6 Luna qua OpenAI API và prompt demo riêng
+`artifacts/system_prompt_paper_ui.md`. Có thể chọn model Groq trong **Model**
+nếu đã cấu hình `GROQ_API_KEY`. Khi Groq từ chối lời gọi tool do model tạo,
+chatbot thử lại bước đó một lần bằng model Groq khác và ghi lại trong **Luồng agent**.
 `lookup` và `fetch` có mặt khi đã cấu hình key tương ứng. Các vòng base eval v0–v3 dùng prompt và tool
 declaration của vòng đánh giá tương ứng.
 

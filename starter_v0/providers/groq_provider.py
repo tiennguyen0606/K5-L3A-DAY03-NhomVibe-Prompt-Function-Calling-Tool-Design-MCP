@@ -5,6 +5,13 @@ import os
 from providers.openai_provider import OpenAIProvider
 
 
+def fallback_after_tool_rejection(error: Exception, model: str | None) -> str | None:
+    """Select a different model when Groq rejects the generated tool call."""
+    if getattr(error, "status_code", None) != 400 or getattr(error, "code", None) != "tool_use_failed":
+        return None
+    return "openai/gpt-oss-120b" if model == "openai/gpt-oss-20b" else "openai/gpt-oss-20b"
+
+
 class GroqProvider(OpenAIProvider):
     """Groq OpenAI-compatible Chat Completions API (tool calling supported)."""
 

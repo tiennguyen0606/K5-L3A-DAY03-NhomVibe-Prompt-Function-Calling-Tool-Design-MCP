@@ -88,15 +88,36 @@ def run_model_tool_loop(
     model: str | None,
     max_tool_rounds: int,
     on_event: Callable[[dict[str, Any]], None] | None = None,
+    retry_model_on_error: Callable[[Exception, str | None], str | None] | None = None,
 ) -> dict[str, Any]:
     working_messages = list(messages)
     rounds: list[dict[str, Any]] = []
     all_tool_events: list[dict[str, Any]] = []
+    model_retried = False
 
     for round_index in range(1, max_tool_rounds + 1):
         if on_event is not None:
             on_event({"type": "model_start", "round": round_index})
-        response = provider.complete(working_messages, tools, model=model, temperature=0.0)
+        try:
+            response = provider.complete(working_messages, tools, model=model, temperature=0.0)
+        except Exception as exc:
+            if model_retried or retry_model_on_error is None:
+                raise
+            previous_model = model or getattr(provider, "default_model", None)
+            fallback_model = retry_model_on_error(exc, previous_model)
+            if not fallback_model or fallback_model == previous_model:
+                raise
+            model_retried = True
+            model = fallback_model
+            if on_event is not None:
+                on_event({
+                    "type": "model_retry",
+                    "round": round_index,
+                    "from_model": previous_model,
+                    "model": model,
+                    "error_code": getattr(exc, "code", None),
+                })
+            response = provider.complete(working_messages, tools, model=model, temperature=0.0)
         calls = response.tool_calls
         round_record: dict[str, Any] = {
             "round": round_index,

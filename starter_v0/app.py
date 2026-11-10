@@ -10,6 +10,7 @@ import streamlit as st
 
 from chat import json_text, now_iso, run_model_tool_loop
 from providers import make_provider
+from providers.groq_provider import fallback_after_tool_rejection
 from tools import load_tool_declarations, to_openai_tools
 from versioning import artifact_version_dict, build_artifact_version
 
@@ -20,7 +21,9 @@ TOOLS_PATH = ROOT / "artifacts" / "tools.yaml"
 PAPER_TOOLS = {"clarify", "papers", "paper_text", "compare_papers", "research_brief"}
 WEB_TOOLS = {"lookup": "TAVILY_API_KEY", "fetch": "FIRECRAWL_API_KEY"}
 SOURCE_TOOLS = {"papers", "paper_text", *WEB_TOOLS}
-GROQ_UI_MODELS = ("qwen/qwen3.8-27b", "openai/gpt-oss-20b", "openai/gpt-oss-120b")
+LUNA_MODEL = "gpt-5.6-luna"
+UI_MODELS = (LUNA_MODEL, "openai/gpt-oss-20b", "openai/gpt-oss-120b", "qwen/qwen3.8-27b")
+PROVIDER_LABELS = {"openai": "OpenAI", "groq": "Groq"}
 MAX_ROUNDS = 7
 EXAMPLE = "Tìm 2 paper arXiv về đánh giá khả năng dùng công cụ của AI agent, rồi viết kết luận ngắn kèm nguồn."
 TOOL_LABELS = {
@@ -36,7 +39,7 @@ STATUS_LABELS = {
     "answered": "Hoàn tất",
     "waiting_for_user": "Chờ bạn bổ sung",
     "max_tool_rounds": "Đã tới giới hạn số bước",
-    "provider_error": "Lỗi kết nối model",
+    "provider_error": "Model chưa hoàn tất",
 }
 
 
@@ -92,6 +95,8 @@ def show_trace(turns: list[dict[str, Any]]) -> None:
     for event in steps:
         if event["type"] == "model_start":
             st.caption(f"VÒNG {event['round']:02d}  ·  MODEL")
+        elif event["type"] == "model_retry":
+            st.caption(f"Groq từ chối lời gọi tool. Thử lại vòng {event['round']} bằng {event['model']}.")
         elif event["type"] == "tool_result":
             name = event["tool"]
             result = event["result"]
@@ -102,7 +107,9 @@ def show_trace(turns: list[dict[str, Any]]) -> None:
                 st.json(result, expanded=1)
 
 
-def run_turn(question: str, provider: Any, tools: list[dict[str, Any]], trace_slot: Any) -> None:
+def run_turn(
+    question: str, provider: Any, provider_name: str, tools: list[dict[str, Any]], trace_slot: Any,
+) -> None:
     turns = st.session_state.turns
     recent = [turn for turn in turns if turn["status"] != "provider_error" or turn_sources(turn)][-5:]
     history = []
@@ -121,9 +128,10 @@ def run_turn(question: str, provider: Any, tools: list[dict[str, Any]], trace_sl
         {"role": "user", "content": question},
     ]
     steps: list[dict[str, Any]] = []
+    provider_label = PROVIDER_LABELS[provider_name]
     turn = {
         "turn_index": len(turns) + 1, "user": question, "started_at": now_iso(),
-        "model": provider.default_model, "trace": steps,
+        "provider": provider_name, "model": provider.default_model, "trace": steps,
     }
     start = perf_counter()
     with trace_slot.container():
@@ -134,7 +142,11 @@ def run_turn(question: str, provider: Any, tools: list[dict[str, Any]], trace_sl
             kind = event["type"]
             if kind == "model_start":
                 live.update(label=f"Vòng {event['round']} · Đang chờ model")
-                live.caption(f"Vòng {event['round']} · Gửi yêu cầu tới Groq")
+                live.caption(f"Vòng {event['round']} · Gửi yêu cầu tới {provider_label}")
+            elif kind == "model_retry":
+                turn["model"] = event["model"]
+                live.update(label=f"Đang thử lại bằng {event['model']}")
+                live.caption(f"Groq từ chối lời gọi tool của {event['from_model']}.")
             elif kind == "tool_start":
                 name = event["tool"]
                 live.update(label=f"Đang chạy {name}")
@@ -146,6 +158,7 @@ def run_turn(question: str, provider: Any, tools: list[dict[str, Any]], trace_sl
             turn.update(run_model_tool_loop(
                 provider=provider, messages=messages, tools=tools, model=None,
                 max_tool_rounds=MAX_ROUNDS, on_event=on_event,
+                retry_model_on_error=fallback_after_tool_rejection if provider_name == "groq" else None,
             ))
             if turn["status"] == "max_tool_rounds":
                 turn["assistant_text"] = (
@@ -153,12 +166,23 @@ def run_turn(question: str, provider: Any, tools: list[dict[str, Any]], trace_sl
                     "Bạn có thể xem dữ liệu đã thu được trong bảng theo dõi hoặc hỏi với phạm vi hẹp hơn."
                 )
         except Exception as exc:
-            message = f"Groq chưa trả được kết quả ({type(exc).__name__}). Bạn thử gửi lại sau."
-            if getattr(exc, "status_code", None) == 429:
-                message = "Groq đang giới hạn lượt gọi. Chờ một chút rồi gửi lại, hoặc thử chọn model khác."
+            status = getattr(exc, "status_code", None)
+            error_code = getattr(exc, "code", None)
+            message = f"{provider_label} chưa trả được kết quả ({type(exc).__name__}). Bạn thử gửi lại sau."
+            if status == 429:
+                message = f"{provider_label} đang giới hạn lượt gọi hoặc tài khoản đã hết quota. Kiểm tra hạn mức rồi thử lại."
+            elif status in {401, 403}:
+                message = f"Kiểm tra khóa API và quyền dùng model trên {provider_label}."
+            elif status == 404 or error_code == "model_not_found":
+                message = f"Tài khoản {provider_label} chưa truy cập được model {provider.default_model}."
+            elif status == 400 and error_code == "tool_use_failed":
+                message = f"{provider_label} từ chối lời gọi công cụ. Hãy thử yêu cầu ngắn hơn hoặc chọn model khác."
+            elif status == 400:
+                message = f"{provider_label} từ chối yêu cầu. Kiểm tra model đã chọn rồi thử lại."
             turn.update(
                 status="provider_error",
                 error_type=type(exc).__name__,
+                error_code=error_code,
                 tool_events=[event for event in steps if event["type"] == "tool_result"],
             )
             if turn_sources(turn):
@@ -180,15 +204,10 @@ def main() -> None:
         st.session_state.turns = []
         st.session_state.session_id = uuid4().hex
     turns = st.session_state.turns
-    provider = make_provider("groq")
-    provider.client_options = {"timeout": 25.0, "max_retries": 0}
-    provider.max_completion_tokens = 1500
     available_tools = PAPER_TOOLS | {name for name, env in WEB_TOOLS.items() if os.getenv(env)}
     tools = to_openai_tools([
         tool for tool in load_tool_declarations(TOOLS_PATH) if tool["name"] in available_tools
     ])
-    ready = bool(os.getenv("GROQ_API_KEY"))
-
     st.html("""
     <header class="brandbar">
       <div class="wordmark"><span class="brand-icon" aria-hidden="true">p</span> Papertrail</div>
@@ -202,12 +221,16 @@ def main() -> None:
     </section>
     """)
     info, settings = st.columns([1.65, 1], gap="medium", vertical_alignment="center")
-    with settings.popover("Model Groq", icon=":material/tune:"):
-        provider.default_model = st.selectbox(
-            "Model cho lượt tiếp theo",
-            GROQ_UI_MODELS,
-        )
-    info.caption(f"Groq  ·  {provider.default_model}  ·  {len(tools)} công cụ nghiên cứu")
+    with settings.popover("Model", icon=":material/tune:"):
+        model = st.selectbox("Model cho lượt tiếp theo", UI_MODELS)
+    provider_name = "openai" if model == LUNA_MODEL else "groq"
+    provider = make_provider(provider_name)
+    provider.default_model = model
+    provider.client_options = {"timeout": 25.0, "max_retries": 0}
+    provider.max_completion_tokens = 1500
+    key_name = f"{provider_name.upper()}_API_KEY"
+    ready = bool(os.getenv(key_name))
+    info.caption(f"{PROVIDER_LABELS[provider_name]}  ·  {model}  ·  {len(tools)} công cụ nghiên cứu")
     left, right = st.columns([1.65, 1], gap="medium", vertical_alignment="top")
     with left, st.container(border=True, key="workspace"):
         st.html("""
@@ -215,7 +238,7 @@ def main() -> None:
         <h2>Trò chuyện</h2><p>Đặt câu hỏi, gửi link hoặc hỏi tiếp về tài liệu đã tìm.</p></div>
         """)
         if not ready:
-            st.warning("Cần cấu hình GROQ_API_KEY trong starter_v0/.env rồi khởi động lại ứng dụng.")
+            st.warning(f"Cần cấu hình {key_name} trong starter_v0/.env rồi khởi động lại ứng dụng.")
         with st.container(height=360 if turns else 205, border=False, key="conversation", autoscroll=True):
             if not turns:
                 with st.chat_message("assistant", avatar=":material/auto_stories:"):
@@ -247,15 +270,16 @@ def main() -> None:
         """)
         trace_slot = st.empty()
         if question:
-            run_turn(question, provider, tools, trace_slot)
+            run_turn(question, provider, provider_name, tools, trace_slot)
         else:
             with trace_slot.container():
                 show_trace(turns)
         if turns:
+            providers_used = {turn.get("provider", "groq") for turn in turns}
             transcript = {
                 "transcript_id": st.session_state.session_id,
                 **artifact_version_dict(build_artifact_version("paper-ui", PROMPT_PATH, TOOLS_PATH)),
-                "provider": "groq",
+                "provider": next(iter(providers_used)) if len(providers_used) == 1 else "mixed",
                 "enabled_tools": [tool["function"]["name"] for tool in tools],
                 "turns": turns,
             }

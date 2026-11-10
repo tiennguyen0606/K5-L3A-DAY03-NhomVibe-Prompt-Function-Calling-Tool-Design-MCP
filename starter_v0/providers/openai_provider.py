@@ -44,11 +44,12 @@ class OpenAIProvider:
             raise RuntimeError(f"Missing API key env var: {self.api_key_env}")
 
         client = OpenAI(api_key=api_key, base_url=self.base_url, **self.client_options)
-        kwargs: dict[str, Any] = {
-            "model": model or self.default_model,
-            "messages": messages,
-            "temperature": temperature,
-        }
+        selected_model = model or self.default_model
+        kwargs: dict[str, Any] = {"model": selected_model, "messages": messages}
+        if self.api_key_env == "OPENAI_API_KEY" and selected_model == "gpt-5.6-luna":
+            kwargs["reasoning_effort"] = "none"
+        else:
+            kwargs["temperature"] = temperature
         if tools:
             kwargs["tools"] = tools
         if tool_choice is not None:
