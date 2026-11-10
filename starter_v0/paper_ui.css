@@ -1,0 +1,79 @@
+:root {
+  --ink: #211e35;
+  --muted: #655f75;
+  --violet: #5741b0;
+  --line: #e4e0ea;
+}
+
+[data-testid="stHeader"] { background: transparent; }
+[data-testid="stAppDeployButton"] { display: none; }
+.stApp .block-container { max-width: 1220px; padding: 2rem 2.4rem 2.5rem; }
+.brandbar {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  margin: 0 0 1rem; color: var(--ink);
+}
+.wordmark { display: flex; align-items: center; gap: .55rem; font-size: 1.1rem; font-weight: 760; }
+.brand-icon {
+  width: 1.85rem; height: 1.85rem; display: grid; place-items: center;
+  border-radius: .5rem; background: var(--violet); color: white;
+  font: italic 700 1.4rem Georgia, serif;
+}
+.eyebrow {
+  font: 650 .68rem/1.4 "Segoe UI", sans-serif;
+  letter-spacing: .15em; text-transform: uppercase; color: var(--violet);
+}
+.brandbar .eyebrow { color: var(--muted); text-align: right; }
+.hero {
+  position: relative; isolation: isolate; overflow: hidden;
+  border-radius: 1.35rem; padding: 1.55rem 2.2rem 1.65rem;
+  background: linear-gradient(118deg, #211d37 15%, #2c2450 65%, #403066);
+  color: #fbf9ff;
+}
+.hero .eyebrow { color: #d4c5ff; }
+.hero h1 {
+  margin: .65rem 0 .65rem; padding: 0; max-width: 36rem;
+  font: 700 clamp(2rem, 4.3vw, 3rem)/1.1 "Segoe UI", sans-serif;
+  letter-spacing: -.048em; color: #fbf9ff;
+}
+.hero p { max-width: 30rem; margin: 0; color: #e2d9f2; font-size: .96rem; }
+.hero-art {
+  position: absolute; z-index: -1; inset: 0 0 0 auto; width: 43%;
+  background-image: radial-gradient(#cbbaff50 1px, transparent 1px);
+  background-size: 17px 17px;
+  mask-image: linear-gradient(90deg, transparent 2%, black 72%);
+}
+.hero-art::before, .hero-art::after {
+  position: absolute; content: ""; border: 1px solid #d8c9ff55;
+  border-radius: 50%; width: 17rem; height: 17rem; top: -3.8rem; right: -2rem;
+}
+.hero-art::after { width: 21rem; height: 21rem; top: -5.8rem; right: -4rem; }
+.panel-title { margin: .1rem 0 .25rem; }
+.panel-title h2 {
+  margin: .2rem 0 0; padding: 0; color: var(--ink);
+  font: 700 1.55rem/1.25 "Segoe UI", sans-serif; letter-spacing: -.035em;
+}
+.panel-title p, .trace-empty p { color: var(--muted); font-size: .88rem; margin: .35rem 0 0; }
+.st-key-workspace, .st-key-trace {
+  background: #fff; border-color: var(--line) !important;
+  border-radius: 1.15rem !important; box-shadow: 0 6px 24px #32295008;
+}
+.trace-empty {
+  background: #f4f1fb; border: 1px dashed #cfc4ed;
+  border-radius: .8rem; padding: 1rem; color: #3a2e66; font-size: .9rem;
+}
+.trace-empty .eyebrow { display: block; margin-bottom: .4rem; }
+[data-testid="stChatMessage"] { border-radius: .85rem; }
+[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) {
+  background: #f4f1fb;
+}
+.st-key-conversation { background: #faf9fd; border-radius: .85rem; padding: .35rem; }
+.st-key-paper_question textarea { font-size: .95rem; }
+[data-testid="stExpander"] { border-color: var(--line); }
+
+@media (max-width: 700px) {
+  .stApp .block-container { padding: 1.3rem 1rem 2rem; }
+  .hero { padding: 1.65rem 1.4rem; }
+  .hero h1 { max-width: 21rem; }
+  .hero-art { opacity: .45; }
+  .brandbar .eyebrow { font-size: .59rem; padding-right: 1.6rem; }
+}

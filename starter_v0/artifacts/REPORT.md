@@ -52,12 +52,23 @@ Ví dụ: "Research agent: tìm tin theo từ khóa / theo tài khoản, đọc 
 
 Fill from `artifacts/version_log.csv` and `runs/*.json`.
 
+Baseline `v0` dùng Groq / `qwen/qwen3.8-27b`. Prompt và danh sách tool được
+lưu theo bản gốc của commit `2469cd3` trong `artifacts/baselines/v0/`. Lần
+chạy này để trống cấu hình Telegram vì base eval có tình huống thử yêu cầu
+đăng bài. Chạy từ `starter_v0/` để tái lập baseline:
+
+```bash
+python run_eval.py --provider groq --model qwen/qwen3.8-27b --version v0 --suite base --eval-cases data/eval_base.json --system-prompt artifacts/baselines/v0/system_prompt.md --tools artifacts/baselines/v0/tools.yaml
+```
+
 | Version | Changed Artifact | Hypothesis | Metric Before | Metric After | Run File |
 |---|---|---|---:|---:|---|
-| v0 | baseline |  |  |  |  |
+| v0 | baseline | Đo hành vi với prompt và khai báo tool gốc | — | 71.4% | [Run JSON](../runs/v0_B_base_groq_20261110T105633299378.json) |
 | v1 |  |  |  |  |  |
 | v2 |  |  |  |  |  |
 | v3 |  |  |  |  |  |
+
+**Kết quả v0:** 10/14 case được chấm đạt (71.4%), trên 20 case chạy. Routing 85.7%, arguments 71.4%, multi-turn 80.0%. Có 6 lỗi provider bị loại khỏi mẫu số điểm.
 
 ## B2. Failure Analysis
 
@@ -65,7 +76,20 @@ Use actual failures from `results[*].result.failures`.
 
 | Case ID | Failure Type | Actual Tool Calls | What Failed | Fix |
 |---|---|---|---|---|
-|  |  |  |  |  |
+| R01_user_tweets_routing | provider_error | — | APIConnectionError | Kiểm tra lỗi API/model |
+| R02_search_tweets_routing | provider_error | — | Groq từ chối lời gọi tool do định dạng hoặc tham số không hợp lệ. | Kiểm tra lỗi API/model |
+| R03_web_news_routing | wrong_tool / wrong_arg_value | lookup({"max_results":8,"query":"AI news today highlights","timeframe":"day","topic":"news"}) | query: expected 'AI', got 'AI news today highlights' | Chưa sửa ở v0 |
+| R08_out_of_scope | provider_error | — | APITimeoutError | Kiểm tra lỗi API/model |
+| R10_missing_handle | missing_info / missing_tool_call | timeline({"limit":5,"screenname":"sama"}) | missing tool call clarify; extra tool call timeline | Chưa sửa ở v0 |
+| R11_missing_url | missing_info / missing_tool_call | fetch({"url":"https://www.bloomberg.com/news/articles/2024-01-15/ai-advances-transform-industry"}) | missing tool call clarify; extra tool call fetch | Chưa sửa ở v0 |
+| R12_confirm_before_send | provider_error | — | APITimeoutError | Kiểm tra lỗi API/model |
+| R13_parallel_web_and_tweets | provider_error | — | Groq từ chối lời gọi tool do định dạng hoặc tham số không hợp lệ. | Kiểm tra lỗi API/model |
+| M02_carryover_timeframe | wrong_arg_value / wrong_arg_value | lookup({"max_results":5,"query":"robotics news today","timeframe":"day","topic":"news"}) | query: expected 'robotics', got 'robotics news today' | Chưa sửa ở v0 |
+| M03_correction_handle | provider_error | — | APITimeoutError | Kiểm tra lỗi API/model |
+
+[CSV đủ 20 case](../analysis/v0_base_cases.csv). Run ghi nhận 1 lỗi khi thực thi tool; điểm routing và arguments do runner tính từ tool call, độc lập với việc tool có lấy được dữ liệu hay không.
+
+**Thử lại lỗi mạng.** [Run bổ sung](../runs/v0-retry_B_base_groq_20261110T105817153621.json) chấm được cả 4 case, trong đó 3 case đạt. Case R12 gọi `send` và thiếu bước hỏi xác nhận `clarify`. Hai case khác trong run gốc vẫn bị Groq từ chối lời gọi tool. Gộp độ phủ của hai lần chạy có 13/18 case đạt trên số case chấm được. Bảng trên ghi điểm của run đầy đủ ban đầu.
 
 ## B3. Team Eval Cases
 

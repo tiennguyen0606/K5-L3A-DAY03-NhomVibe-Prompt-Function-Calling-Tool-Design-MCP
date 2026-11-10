@@ -1,0 +1,125 @@
+{
+  "run_id": "paper-tool-v2_B_group_groq_20261110T101217743617",
+  "version": "paper-tool-v2",
+  "artifact_version": "paper-tool-v2+peb1c8179815b+td4ba06710f10",
+  "prompt_hash": "eb1c8179815bd79d34de7d326420bb99b3072e6e8ae96464c02d4411f905fc68",
+  "tools_hash": "d4ba06710f10efddb529a8ca21df70b0dae9c577eda42e2a0880a8784d458303",
+  "phase": "B",
+  "suite": "group",
+  "provider": "groq",
+  "model": "openai/gpt-oss-120b",
+  "system_prompt": "D:\\Tuyen\\vinuni\\lab\\K5-L3A-DAY03-NhomVibe-Prompt-Function-Calling-Tool-Design-MCP\\starter_v0\\artifacts\\system_prompt.md",
+  "tools": "D:\\Tuyen\\vinuni\\lab\\K5-L3A-DAY03-NhomVibe-Prompt-Function-Calling-Tool-Design-MCP\\starter_v0\\artifacts\\tools.yaml",
+  "eval_cases": "data\\eval_group.json",
+  "dataset_id": "day04_v2_research_group",
+  "dataset_role": "group",
+  "description": "Case do NHÓM tự viết thêm để cover thêm trường hợp. Mỗi case cần: id, phase='B', query HOẶC turns, failure_type (thuộc allowed_failure_types), và expect (tool_calls[...] hoặc no_tool=true). Nên kèm metadata.what_it_tests.",
+  "generated_at": "2026-11-10T10:12:17",
+  "summary": {
+    "total_cases": 1,
+    "measured_cases": 1,
+    "provider_error_cases": 0,
+    "passed_cases": 1,
+    "case_accuracy": 1.0,
+    "tool_routing_accuracy": 1.0,
+    "argument_accuracy": 1.0,
+    "multiturn_accuracy": null,
+    "failure_counts": {},
+    "observed_mismatch_counts": {}
+  },
+  "results": [
+    {
+      "id": "G_PAPER_COMPARE_FROM_NOTES",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": false,
+      "metadata": {
+        "what_it_tests": "Use compare_papers with the selected criteria when notes and source links are already provided. No search or fetch calls."
+      },
+      "input": "Dùng đúng ghi chú đã cung cấp để tạo bảng so sánh hai bài sau. Chỉ đưa cột phương pháp và hạn chế, theo thứ tự đó. Bài A (https://example.org/paper-a): thử nghiệm mô phỏng, dữ liệu nhỏ. Bài B (https://example.org/paper-b): nghiên cứu thực địa, chưa rõ hạn chế. Không tra cứu thêm.",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "compare_papers",
+            "args": {
+              "criteria": [
+                "method",
+                "limitations"
+              ]
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "compare_papers",
+            "args": {
+              "criteria": [
+                "method",
+                "limitations"
+              ],
+              "items": [
+                {
+                  "limitations": "dữ liệu nhỏ",
+                  "method": "thử nghiệm mô phỏng",
+                  "title": "Paper A",
+                  "url": "https://example.org/paper-a"
+                },
+                {
+                  "limitations": "chưa rõ hạn chế",
+                  "method": "nghiên cứu thực địa",
+                  "title": "Paper B",
+                  "url": "https://example.org/paper-b"
+                }
+              ]
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_tool",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "compare_papers",
+          "args": {
+            "criteria": [
+              "method",
+              "limitations"
+            ],
+            "items": [
+              {
+                "limitations": "dữ liệu nhỏ",
+                "method": "thử nghiệm mô phỏng",
+                "title": "Paper A",
+                "url": "https://example.org/paper-a"
+              },
+              {
+                "limitations": "chưa rõ hạn chế",
+                "method": "nghiên cứu thực địa",
+                "title": "Paper B",
+                "url": "https://example.org/paper-b"
+              }
+            ]
+          },
+          "result": {
+            "tool": "compare_papers",
+            "paper_count": 2,
+            "criteria": [
+              "method",
+              "limitations"
+            ],
+            "markdown": "| Bài báo | Phương pháp | Hạn chế |\n| --- | --- | --- |\n| [Paper A](https://example.org/paper-a) | thử nghiệm mô phỏng | dữ liệu nhỏ |\n| [Paper B](https://example.org/paper-b) | nghiên cứu thực địa | chưa rõ hạn chế |"
+          }
+        }
+      ]
+    }
+  ]
+}

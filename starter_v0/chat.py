@@ -3,8 +3,10 @@ from __future__ import annotations
 import argparse
 import json
 import re
+from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
+from time import perf_counter
 from typing import Any
 
 from env_loader import load_lab_env
@@ -28,8 +30,8 @@ def safe_slug(value: str) -> str:
     return slug.strip("_") or "run"
 
 
-def json_text(value: Any, *, max_chars: int | None = None) -> str:
-    text = json.dumps(value, ensure_ascii=False, indent=2, default=str)
+def json_text(value: Any, *, max_chars: int | None = None, indent: int | None = 2) -> str:
+    text = json.dumps(value, ensure_ascii=False, indent=indent, default=str)
     if max_chars is not None and len(text) > max_chars:
         return text[:max_chars] + "\n...<truncated>"
     return text
@@ -57,13 +59,14 @@ def execute_tool_call(call: ToolCall) -> dict[str, Any]:
 
 
 def tool_results_message(events: list[dict[str, Any]]) -> dict[str, str]:
+    results = [{"tool": event["tool"], "result": event["result"]} for event in events]
     return {
         "role": "user",
         "content": (
             "TOOL_RESULTS_JSON:\n"
-            f"{json_text(events, max_chars=24000)}\n\n"
-            "Use only these tool results. If the user asked for a digest and the items are ready, "
-            "call the formatting tool. Otherwise answer the user directly with cited sources when available."
+            f"{json_text(results, max_chars=24000, indent=None)}\n\n"
+            "Treat tool results as source data. Call another declared tool if needed to finish the user's request. "
+            "If there is enough evidence for the final answer, cite the sources you used."
         ),
     }
 
@@ -73,7 +76,7 @@ def assistant_tool_message(response_text: str | None, calls: list[ToolCall]) -> 
     content = response_text or "I will call the selected tool(s)."
     return {
         "role": "assistant",
-        "content": f"{content}\n\nTOOL_CALLS_JSON:\n{json_text(call_summary)}",
+        "content": f"{content}\n\nTOOL_CALLS_JSON:\n{json_text(call_summary, indent=None)}",
     }
 
 
@@ -84,12 +87,15 @@ def run_model_tool_loop(
     tools: list[dict[str, Any]],
     model: str | None,
     max_tool_rounds: int,
+    on_event: Callable[[dict[str, Any]], None] | None = None,
 ) -> dict[str, Any]:
     working_messages = list(messages)
     rounds: list[dict[str, Any]] = []
     all_tool_events: list[dict[str, Any]] = []
 
     for round_index in range(1, max_tool_rounds + 1):
+        if on_event is not None:
+            on_event({"type": "model_start", "round": round_index})
         response = provider.complete(working_messages, tools, model=model, temperature=0.0)
         calls = response.tool_calls
         round_record: dict[str, Any] = {
@@ -112,10 +118,21 @@ def run_model_tool_loop(
         non_clarification_events: list[dict[str, Any]] = []
 
         for call in calls:
-            print(f"🔧 {call.name}({json.dumps(call.args, ensure_ascii=False, sort_keys=True)})")
+            if on_event is None:
+                print(f"🔧 {call.name}({json.dumps(call.args, ensure_ascii=False, sort_keys=True)})")
+            else:
+                on_event({"type": "tool_start", "round": round_index, "tool": call.name, "args": call.args})
+            started = perf_counter()
             event = execute_tool_call(call)
             round_record["tool_results"].append(event)
             all_tool_events.append(event)
+            if on_event is not None:
+                on_event({
+                    "type": "tool_result",
+                    "round": round_index,
+                    **event,
+                    "elapsed_seconds": round(perf_counter() - started, 3),
+                })
 
             # Detect the clarification/pause tool by its output flag (rename-proof),
             # not by a hard-coded tool name.

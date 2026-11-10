@@ -30,7 +30,27 @@ cd starter_v0
 python scripts/preflight_provider.py --provider openrouter
 ```
 
-Local model (bonus Small Local Model Challenge, không cần API key):
+### Groq
+
+Set `GROQ_API_KEY` in `starter_v0/.env`. The default Groq model is
+`openai/gpt-oss-20b` (or the value of `GROQ_MODEL`). Groq lists it without parallel tool calls, so for
+base eval cases that expect two calls in one turn, consider a compatible
+model with parallel tool support via `--model`. See
+[Groq tool use](https://console.groq.com/docs/tool-use/overview).
+
+Run from `starter_v0/`:
+
+```bash
+python scripts/preflight_provider.py --provider groq
+python run_eval.py --provider groq --version paper-tool --suite group --eval-cases data/eval_group.json
+```
+
+If baseline v0 has not been run yet, use the original prompt and tool
+declarations from the starter commit (`2469cd3` in this repository). Pass that
+snapshot of `tools.yaml` via `--tools` so v0 measures the starter tool set
+before `compare_papers` was added.
+
+### Local model (bonus Small Local Model Challenge, không cần API key)
 
 ```bash
 # Cài Ollama: https://ollama.com/download
