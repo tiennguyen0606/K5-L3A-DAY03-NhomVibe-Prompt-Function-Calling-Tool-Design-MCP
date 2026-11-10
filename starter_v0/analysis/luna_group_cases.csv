@@ -1,0 +1,11 @@
+run_id,version,artifact_version,suite,case_id,is_multiturn,case_failure_type,observed_mismatch,expected_tool,actual_tool,passed,routing_correct,args_correct,failures
+v3-integrated_B_group_openai_20261110T113759081708,v3-integrated,v3-integrated+pbe29de49b80b+tc02df77932c8,group,G_PAPER_COMPARE_FROM_NOTES,False,wrong_tool,,compare_papers,compare_papers,True,True,True,
+v3-integrated_B_group_openai_20261110T113759081708,v3-integrated,v3-integrated+pbe29de49b80b+tc02df77932c8,group,G_RESEARCH_BRIEF_FROM_SOURCES,True,wrong_tool,,research_brief,research_brief,True,True,True,
+v3-integrated_B_group_openai_20261110T113759081708,v3-integrated,v3-integrated+pbe29de49b80b+tc02df77932c8,group,G_SEARCH_BEFORE_RESEARCH_BRIEF,False,wrong_tool,,papers,papers,True,True,True,
+v3-integrated_B_group_openai_20261110T113759081708,v3-integrated,v3-integrated+pbe29de49b80b+tc02df77932c8,group,G_WEB_NEWS_TIME_WINDOW,False,wrong_arg_value,,lookup,lookup,True,True,True,
+v3-integrated_B_group_openai_20261110T113759081708,v3-integrated,v3-integrated+pbe29de49b80b+tc02df77932c8,group,G_MISSING_ARTICLE_URL,False,missing_info,,clarify,clarify,True,True,True,
+v3-integrated_B_group_openai_20261110T113759081708,v3-integrated,v3-integrated+pbe29de49b80b+tc02df77932c8,group,G_READ_ARXIV_PAGE_LIMIT,False,wrong_arg_value,,paper_text,paper_text,True,True,True,
+v3-integrated_B_group_openai_20261110T113759081708,v3-integrated,v3-integrated+pbe29de49b80b+tc02df77932c8,group,G_COMPARE_REVISED_CRITERIA,True,wrong_arg_value,,compare_papers,compare_papers,True,True,True,
+v3-integrated_B_group_openai_20261110T113759081708,v3-integrated,v3-integrated+pbe29de49b80b+tc02df77932c8,group,G_FETCH_AFTER_CLARIFICATION,True,missing_info,,fetch,fetch,True,True,True,
+v3-integrated_B_group_openai_20261110T113759081708,v3-integrated,v3-integrated+pbe29de49b80b+tc02df77932c8,group,G_BRIEF_TOPIC_FROM_HISTORY,True,wrong_arg_value,,research_brief,research_brief,True,True,True,
+v3-integrated_B_group_openai_20261110T113759081708,v3-integrated,v3-integrated+pbe29de49b80b+tc02df77932c8,group,G_CANCEL_PUBLISHING,True,wrong_boundary,,no_tool,,True,True,True,
