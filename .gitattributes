@@ -1,0 +1,2 @@
+# Preserve the exact bytes used to hash archived eval artifacts on every OS.
+starter_v0/artifacts/baselines/** text eol=lf

@@ -3,5 +3,39 @@
   "dataset_role": "group",
   "description": "Case do NHÓM tự viết thêm để cover thêm trường hợp. Mỗi case cần: id, phase='B', query HOẶC turns, failure_type (thuộc allowed_failure_types), và expect (tool_calls[...] hoặc no_tool=true). Nên kèm metadata.what_it_tests.",
   "allowed_failure_types": ["wrong_tool", "wrong_arg_value", "wrong_boundary", "unnecessary_tool", "out_of_scope", "missing_info"],
-  "cases": []
+  "cases": [
+    {
+      "id": "G_PAPER_COMPARE_FROM_NOTES",
+      "phase": "B",
+      "query": "Dùng đúng ghi chú đã cung cấp để tạo bảng so sánh hai bài sau. Chỉ đưa cột phương pháp và hạn chế, theo thứ tự đó. Bài A (https://example.org/paper-a): thử nghiệm mô phỏng, dữ liệu nhỏ. Bài B (https://example.org/paper-b): nghiên cứu thực địa, chưa rõ hạn chế. Không tra cứu thêm.",
+      "failure_type": "wrong_tool",
+      "expect": {
+        "tool_calls": [
+          {"name": "compare_papers", "args": {"criteria": ["method", "limitations"]}}
+        ]
+      },
+      "metadata": {
+        "what_it_tests": "Use compare_papers with the selected criteria when notes and source links are already provided. No search or fetch calls."
+      }
+    },
+    {
+      "id": "G_RESEARCH_BRIEF_FROM_SOURCES",
+      "phase": "B",
+      "turns": [
+        {"role": "user", "content": "Chủ đề: Đánh giá AI agent. Nguồn AgentBench (https://arxiv.org/abs/2308.03688) đánh giá agent trong 8 môi trường. Nguồn GAIA (https://arxiv.org/abs/2311.12983) dùng câu hỏi thực tế để đo khả năng dùng công cụ."},
+        {"role": "user", "content": "Từ hai nguồn vừa đưa, viết bản tóm tắt cho chủ đề Đánh giá AI agent, gồm kết luận, ý chính và danh sách nguồn. Chỉ dùng ghi chú đã có."}
+      ],
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "research_brief", "args": {}}]},
+      "metadata": {"what_it_tests": "Use research_brief after research evidence is already available in context."}
+    },
+    {
+      "id": "G_SEARCH_BEFORE_RESEARCH_BRIEF",
+      "phase": "B",
+      "query": "Bắt đầu bằng việc tìm đúng 2 bài trên arXiv về tool use của AI agent. Sau khi có kết quả mới viết bản tổng hợp kèm nguồn.",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "papers", "args": {"max_results": 2}}]},
+      "metadata": {"what_it_tests": "Start with papers when there is no source evidence. The eval scores the first model round."}
+    }
+  ]
 }

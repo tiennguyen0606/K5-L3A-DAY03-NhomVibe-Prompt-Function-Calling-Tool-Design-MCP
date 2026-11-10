@@ -310,6 +310,26 @@ Try at least 3 live turns, for example:
 - A request thiếu thông tin (không nói rõ account/URL), rồi lượt sau bổ sung.
 - Một request "đăng/gửi bản tin lên Telegram" — quan sát agent có hành động ngay hay hỏi lại trước, rồi tự quyết định hành vi nào mới đúng và sửa prompt cho khớp.
 
+## Chạy giao diện Papertrail
+
+Đặt `GROQ_API_KEY` trong `starter_v0/.env`, rồi chạy từ `starter_v0/`:
+
+```bash
+python -m streamlit run app.py
+```
+
+Mở [localhost:8501](http://localhost:8501) và nhập câu hỏi trong ô chat.
+Ví dụ: “Tìm 2 paper arXiv về đánh giá AI agent, rồi viết kết luận ngắn kèm
+nguồn.” Agent tìm nguồn trước và gọi `research_brief` khi đã có tài liệu.
+Bạn có thể hỏi tiếp về những nguồn vừa tìm. Bảng **Luồng agent** cập nhật
+khi model và tool đang chạy. Sau mỗi lượt, mở một bước để xem tham số,
+kết quả và thời gian hoặc tải transcript JSON.
+
+Giao diện dùng Groq với Qwen 3.8 27B làm mặc định và prompt demo riêng
+`artifacts/system_prompt_paper_ui.md`. Có thể đổi sang GPT-OSS trong **Model Groq**.
+`lookup` và `fetch` có mặt khi đã cấu hình key tương ứng. Các vòng base eval v0–v3 dùng prompt và tool
+declaration của vòng đánh giá tương ứng.
+
 ## Deploy nhanh để team khác dùng thử (khuyến nghị: Cloudflare Tunnel)
 
 Để team cùng zone tự thử agent trong Team showdown, expose UI đang chạy local ra một link public. Cách nhanh nhất, không cần đăng ký domain hay deploy lên cloud, là **Cloudflare Tunnel** (`cloudflared`).

@@ -22,6 +22,8 @@ class OpenAIProvider:
         self.api_key_default = api_key_default
         self.base_url = base_url
         self.default_model = default_model
+        self.client_options: dict[str, Any] = {}
+        self.max_completion_tokens: int | None = None
 
     def complete(
         self,
@@ -41,7 +43,7 @@ class OpenAIProvider:
         if not api_key:
             raise RuntimeError(f"Missing API key env var: {self.api_key_env}")
 
-        client = OpenAI(api_key=api_key, base_url=self.base_url)
+        client = OpenAI(api_key=api_key, base_url=self.base_url, **self.client_options)
         kwargs: dict[str, Any] = {
             "model": model or self.default_model,
             "messages": messages,
@@ -51,6 +53,8 @@ class OpenAIProvider:
             kwargs["tools"] = tools
         if tool_choice is not None:
             kwargs["tool_choice"] = tool_choice
+        if self.max_completion_tokens is not None:
+            kwargs["max_completion_tokens"] = self.max_completion_tokens
 
         resp = client.chat.completions.create(**kwargs)
         msg = resp.choices[0].message

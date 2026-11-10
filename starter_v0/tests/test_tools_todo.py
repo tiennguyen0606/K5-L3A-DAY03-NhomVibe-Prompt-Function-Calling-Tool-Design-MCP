@@ -13,7 +13,7 @@ from __future__ import annotations
 import pytest
 
 from conftest import FakeResponse  # noqa: F401  (you will need it)
-from tools import TOOL_FUNCTIONS  # noqa: F401
+from tools import TOOL_FUNCTIONS
 
 TODO = "TODO(student): implement this test"
 
@@ -110,13 +110,51 @@ def test_policy_instruction_like_lines_go_to_untrusted_text() -> None:
 #   2. bad / missing input from the model (empty string, wrong type, out-of-enum value)
 #   3. failure path (missing key, HTTP error, timeout) -> returns error dict, does not raise
 
-def test_my_new_tool_happy_path() -> None:
-    pytest.skip(TODO)
+@pytest.fixture
+def paper_notes() -> list[dict[str, str]]:
+    return [
+        {
+            "title": "Agent | Benchmark",
+            "url": "https://example.org/a",
+            "method": "Mô phỏng\nnhiều lượt",
+            "limitations": "Dữ liệu nhỏ",
+        },
+        {"title": "Field Study", "url": "https://example.org/b", "method": "Thực địa"},
+    ]
 
 
-def test_my_new_tool_bad_input_from_model() -> None:
-    pytest.skip(TODO)
+def test_compare_papers_builds_cited_table_with_selected_columns(paper_notes) -> None:
+    result = TOOL_FUNCTIONS["compare_papers"](items=paper_notes, criteria=["method", "limitations"])
+
+    assert result["paper_count"] == 2
+    assert result["markdown"].splitlines() == [
+        "| Bài báo | Phương pháp | Hạn chế |",
+        "| --- | --- | --- |",
+        r"| [Agent \| Benchmark](https://example.org/a) | Mô phỏng nhiều lượt | Dữ liệu nhỏ |",
+        "| [Field Study](https://example.org/b) | Thực địa | Chưa đủ thông tin |",
+    ]
 
 
-def test_my_new_tool_failure_returns_error_dict() -> None:
-    pytest.skip(TODO)
+def test_compare_papers_rejects_unknown_criterion(paper_notes) -> None:
+    result = TOOL_FUNCTIONS["compare_papers"](items=paper_notes, criteria=["citation_count"])
+
+    assert result["error"] == "ValueError"
+    assert "criteria" in result["message"]
+    assert "markdown" not in result
+
+
+def test_compare_papers_requires_a_citable_source(paper_notes) -> None:
+    paper_notes[1]["url"] = "javascript:alert(1)"
+    result = TOOL_FUNCTIONS["compare_papers"](items=paper_notes)
+
+    assert result["error"] == "ValueError"
+    assert "Paper 2" in result["message"]
+    assert "source URL" in result["message"]
+
+
+def test_compare_papers_rejects_the_same_source_twice(paper_notes) -> None:
+    paper_notes[1]["url"] = paper_notes[0]["url"]
+    result = TOOL_FUNCTIONS["compare_papers"](items=paper_notes)
+
+    assert result["error"] == "ValueError"
+    assert "duplicate source URL" in result["message"]
